@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --border: #E2DDD6;
+    --border-strong: #C9C3BA;
+    --text: #1C1A17;
+    --text-muted: #7A7368;
+    --text-faint: #ADA79F;
+    --accent: #2D5A3D;
+    --accent-light: #EAF3E6;
+    --accent-text: #1E3D29;
+    --danger: #8B2E2E;
+    --danger-light: #FAEAEA;
+    --done-line: #ADA79F;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141210;
+      --surface: #1E1C19;
+      --border: #2E2B27;
+      --border-strong: #3E3A35;
+      --text: #F0EDE8;
+      --text-muted: #8A847C;
+      --text-faint: #5A5650;
+      --accent: #5A9E6F;
+      --accent-light: #1A2E1F;
+      --accent-text: #A8D4B4;
+      --danger: #C47070;
+      --danger-light: #2A1A1A;
+      --done-line: #5A5650;
+    }
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .app {
+    max-width: 580px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  header {
+    margin-bottom: 2.5rem;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .date-line {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .progress-bar-wrap {
+    margin-top: 14px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 6px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.75rem;
+  }
+
+  .input-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .input-row input::placeholder { color: var(--text-faint); }
+  .input-row input:focus { border-color: var(--accent); }
+
+  .add-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .add-btn:hover { opacity: 0.88; }
+  .add-btn:active { transform: scale(0.97); }
+
+  .filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+  }
+
+  .filter-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 4px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .filter-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .task-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 16px;
+    animation: slideIn 0.2s ease;
+    transition: opacity 0.2s, border-color 0.15s;
+  }
+
+  .task-item:hover { border-color: var(--border-strong); }
+  .task-item.done { opacity: 0.55; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .check-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .check-circle:hover { border-color: var(--accent); }
+
+  .check-circle.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .check-circle.checked::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-left: none;
+    border-top: none;
+    transform: rotate(45deg) translate(-1px, -1px);
+    display: block;
+  }
+
+  .task-text {
+    flex: 1;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .task-text.done { text-decoration: line-through; color: var(--done-line); }
+
+  .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-faint);
+    font-size: 18px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .del-btn:hover { color: var(--danger); background: var(--danger-light); }
+
+  .empty {
+    text-align: center;
+    padding: 3.5rem 0;
+    color: var(--text-faint);
+  }
+
+  .empty svg { margin-bottom: 12px; opacity: 0.4; }
+  .empty p { font-size: 14px; }
+
+  .clear-done-btn {
+    display: none;
+    margin-top: 1.5rem;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .clear-done-btn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-light); }
+
+  .edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-faint);
+    font-size: 15px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .edit-btn:hover { color: var(--accent); background: var(--accent-light); }
+
+  .task-item.editing { border-color: var(--accent); background: var(--accent-light); }
+
+  .edit-input {
+    flex: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 7px;
+    padding: 4px 10px;
+    outline: none;
+  }
+
+  .save-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 4px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .save-btn:hover { opacity: 0.85; }
+
+  /* Audio note styles */
+  .task-body { display: flex; flex-direction: column; flex: 1; gap: 6px; min-width: 0; }
+
+  .mic-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .mic-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .mic-btn.recording {
+    background: #e53e3e;
+    border-color: #e53e3e;
+    color: #fff;
+    animation: pulse-mic 1s infinite;
+  }
+  @keyframes pulse-mic {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .audio-player {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+  }
+  .audio-label {
+    font-size: 10px;
+    color: var(--text-faint);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .audio-player audio { display: none; }
+
+  .custom-player {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .play-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--accent);
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+    transition: opacity 0.15s;
+  }
+  .play-btn:hover { opacity: 0.7; }
+  .seek-bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 99px;
+    background: var(--border);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+  }
+  .seek-bar::-webkit-slider-thumb {
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .seek-bar::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+  }
+  .audio-time {
+    font-size: 10px;
+    color: var(--text-faint);
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 28px;
+  }
+  .del-audio-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-faint);
+    font-size: 11px;
+    padding: 1px 3px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .del-audio-btn:hover { color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Next</h1>
+    <div class="date-line" id="date-line"></div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-label" id="progress-label">No tasks yet</div>
+  </header>
+
+  <div class="input-row">
+    <input type="text" id="task-input" placeholder="What needs to be done?" />
+    <button class="add-btn" onclick="addTask()">+ Add</button>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" id="f-all" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" id="f-active" onclick="setFilter('active')">Active</button>
+    <button class="filter-btn" id="f-done" onclick="setFilter('done')">Done</button>
+  </div>
+
+  <div class="task-list" id="task-list"></div>
+
+  <div class="empty" id="empty-state" style="display:none;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    </svg>
+    <p>Nothing here — enjoy the calm!</p>
+  </div>
+
+  <button class="clear-done-btn" id="clear-done-btn" onclick="clearDone()">Clear completed tasks</button>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('mytasks_v1') || '[]');
+// migrate: convert old single audio field to audios array
+tasks = tasks.map(t => {
+  if (!t.audios) {
+    t.audios = t.audio ? [{ id: Date.now(), data: t.audio }] : [];
+    delete t.audio;
+  }
+  return t;
+});
+let filter = 'all';
+let nextId = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+
+// Audio recording state
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingTaskId = null;
+let activeStream = null;
+
+function save() {
+  localStorage.setItem('mytasks_v1', JSON.stringify(tasks));
+}
+
+function addTask() {
+  const input = document.getElementById('task-input');
+  const text = input.value.trim();
+  if (!text) return;
+  tasks.unshift({ id: nextId++, text, done: false, created: Date.now(), audios: [] });
+  input.value = '';
+  save();
+  render();
+  input.focus();
+}
+
+function toggleTask(id) {
+  const t = tasks.find(t => t.id === id);
+  if (t) { t.done = !t.done; save(); render(); }
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  save();
+  render();
+}
+
+function deleteAudio(taskId, audioId) {
+  const t = tasks.find(t => t.id === taskId);
+  if (t) { t.audios = t.audios.filter(a => a.id !== audioId); save(); render(); }
+}
+
+let editingId = null;
+
+function editTask(id) {
+  editingId = id;
+  render();
+  const inp = document.getElementById('edit-input-' + id);
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function saveEdit(id) {
+  const inp = document.getElementById('edit-input-' + id);
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (val) {
+    const t = tasks.find(t => t.id === id);
+    if (t) t.text = val;
+    save();
+  }
+  editingId = null;
+  render();
+}
+
+function cancelEdit() { editingId = null; render(); }
+
+function clearDone() {
+  tasks = tasks.filter(t => !t.done);
+  save(); render();
+}
+
+function setFilter(f) {
+  filter = f;
+  ['all','active','done'].forEach(x => {
+    document.getElementById('f-' + x).classList.toggle('active', x === f);
+  });
+  render();
+}
+
+// ── Audio recording ──────────────────────────────────────
+async function startRecording(taskId) {
+  if (recordingTaskId !== null) return;
+
+  // Check if mediaDevices API is even available
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showMicError('Your browser does not support audio recording. Try opening this file via a local server or use Chrome on desktop.');
+    return;
+  }
+
+  // Check existing permission state if API available
+  if (navigator.permissions) {
+    try {
+      const perm = await navigator.permissions.query({ name: 'microphone' });
+      if (perm.state === 'denied') {
+        showMicError('Microphone is blocked.\n\nTo fix on Android:\n1. Open Chrome Settings\n2. Site Settings → Microphone\n3. Remove this site from blocked list\n4. Try again\n\nOr go to Android Settings → Apps → Chrome → Permissions → Microphone → Allow');
+        return;
+      }
+    } catch(e) { /* permissions API not supported, continue */ }
+  }
+
+  try {
+    activeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    recordingTaskId = taskId;
+    mediaRecorder = new MediaRecorder(activeStream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const t = tasks.find(t => t.id === recordingTaskId);
+        if (t) {
+          t.audios.push({ id: Date.now(), data: reader.result });
+          save();
+        }
+        recordingTaskId = null;
+        activeStream.getTracks().forEach(tr => tr.stop());
+        activeStream = null;
+        render();
+      };
+      reader.readAsDataURL(blob);
+    };
+    mediaRecorder.start();
+    const btn = document.getElementById('mic-' + taskId);
+    if (btn) { btn.classList.add('recording'); btn.textContent = '⏹ Stop'; }
+  } catch(err) {
+    recordingTaskId = null;
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      showMicError('Microphone permission denied.\n\nOn Android Chrome:\n1. Tap the 🔒 lock icon in the address bar\n2. Tap Permissions → Microphone → Allow\n3. Refresh and try again\n\nNote: If opening as a file (file://), Chrome blocks mic access. Try using a local server app like "Simple HTTP Server" from Play Store.');
+    } else if (err.name === 'NotFoundError') {
+      showMicError('No microphone found on this device.');
+    } else {
+      showMicError('Could not access microphone.\n\nReason: ' + err.message + '\n\nTry opening this file through a local server instead of directly from file manager.');
+    }
+  }
+}
+
+function showMicError(msg) {
+  // Show styled in-page error instead of bare alert
+  const existing = document.getElementById('mic-error-toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = 'mic-error-toast';
+  toast.style.cssText = `
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--danger);
+    color: var(--text); border-radius: 12px; padding: 14px 18px;
+    max-width: 320px; width: 90%; font-size: 13px; line-height: 1.5;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 999;
+    white-space: pre-line;
+  `;
+  toast.innerHTML = `<strong style="color:var(--danger)">🎙 Mic Error</strong><br>${msg}<br><br>
+    <button onclick="this.parentElement.remove()" style="
+      background:var(--accent);color:#fff;border:none;border-radius:6px;
+      padding:5px 14px;font-size:13px;cursor:pointer;">OK</button>`;
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast.parentElement) toast.remove(); }, 12000);
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+}
+
+function handleMicDown(taskId) { startRecording(taskId); }
+function handleMicUp(taskId) { if (recordingTaskId === taskId) stopRecording(); }
+
+// ── Render ───────────────────────────────────────────────
+function render() {
+  const list = document.getElementById('task-list');
+  const empty = document.getElementById('empty-state');
+  const clearBtn = document.getElementById('clear-done-btn');
+  const fill = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+
+  const total = tasks.length;
+  const done = tasks.filter(t => t.done).length;
+
+  if (total === 0) {
+    fill.style.width = '0%';
+    label.textContent = 'No tasks yet';
+  } else {
+    const pct = Math.round((done / total) * 100);
+    fill.style.width = pct + '%';
+    label.textContent = done === total ? 'All done! 🎉' : `${done} of ${total} completed`;
+  }
+
+  const hasDone = tasks.some(t => t.done);
+  clearBtn.style.display = hasDone ? 'inline-block' : 'none';
+
+  const visible = tasks.filter(t => {
+    if (filter === 'active') return !t.done;
+    if (filter === 'done') return t.done;
+    return true;
+  });
+
+  list.innerHTML = '';
+
+  if (visible.length === 0) {
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    visible.forEach(t => {
+      const row = document.createElement('div');
+      const isEditing = editingId === t.id;
+      row.className = 'task-item' + (t.done && !isEditing ? ' done' : '') + (isEditing ? ' editing' : '');
+
+      if (isEditing) {
+        row.innerHTML = `
+          <div class="check-circle ${t.done ? 'checked' : ''}" style="pointer-events:none;opacity:0.4;"></div>
+          <input class="edit-input" id="edit-input-${t.id}" value="${esc(t.text)}" />
+          <button class="save-btn" onclick="saveEdit(${t.id})">Save</button>
+          <button class="del-btn" onclick="cancelEdit()" title="Cancel" aria-label="Cancel edit">✕</button>
+        `;
+      } else {
+        const audiosHTML = t.audios.map((a, i) => `
+          <div class="audio-player" id="ap-${t.id}-${a.id}">
+            <span class="audio-label">🎙${i + 1}</span>
+            <audio id="aud-${t.id}-${a.id}" src="${a.data}"></audio>
+            <div class="custom-player">
+              <button class="play-btn" onclick="togglePlay(${t.id},${a.id})" id="pb-${t.id}-${a.id}">▶</button>
+              <input class="seek-bar" type="range" value="0" min="0" step="0.01"
+                id="sb-${t.id}-${a.id}"
+                oninput="seekAudio(${t.id},${a.id},this.value)"
+                style="background: linear-gradient(to right, var(--accent) 0%, var(--border) 0%)">
+              <span class="audio-time" id="at-${t.id}-${a.id}">0:00</span>
+            </div>
+            <button class="del-audio-btn" onclick="deleteAudio(${t.id},${a.id})" title="Remove">🗑</button>
+          </div>
+        `).join('');
+
+        row.innerHTML = `
+          <div class="check-circle ${t.done ? 'checked' : ''}" onclick="toggleTask(${t.id})" role="checkbox" aria-checked="${t.done}" tabindex="0" aria-label="Toggle task"></div>
+          <div class="task-body">
+            <span class="task-text ${t.done ? 'done' : ''}">${esc(t.text)}</span>
+            ${audiosHTML}
+          </div>
+          <button class="mic-btn" id="mic-${t.id}"
+            onmousedown="handleMicDown(${t.id})"
+            onmouseup="handleMicUp(${t.id})"
+            ontouchstart="handleMicDown(${t.id})"
+            ontouchend="handleMicUp(${t.id})"
+            title="Hold to record audio note"
+            aria-label="Record audio note">🎙${t.audios.length > 0 ? ' +' : ''}</button>
+          <button class="edit-btn" onclick="editTask(${t.id})" aria-label="Edit task" title="Edit">✎</button>
+          <button class="del-btn" onclick="deleteTask(${t.id})" aria-label="Delete task" title="Delete">✕</button>
+        `;
+      }
+      list.appendChild(row);
+    });
+  }
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Custom audio player ───────────────────────────────────
+function togglePlay(taskId, audioId) {
+  const aud = document.getElementById(`aud-${taskId}-${audioId}`);
+  const btn = document.getElementById(`pb-${taskId}-${audioId}`);
+  if (!aud) return;
+  if (aud.paused) {
+    // pause all others first
+    document.querySelectorAll('audio').forEach(a => { if (a !== aud) { a.pause(); updatePlayBtn(a); } });
+    aud.play();
+    btn.textContent = '⏸';
+  } else {
+    aud.pause();
+    btn.textContent = '▶';
+  }
+  aud.ontimeupdate = () => updateProgress(taskId, audioId, aud);
+  aud.onended = () => { btn.textContent = '▶'; updateProgress(taskId, audioId, aud); };
+}
+
+function updatePlayBtn(aud) {
+  // reset any play button tied to this audio by matching src
+  document.querySelectorAll('.play-btn').forEach(b => b.textContent = '▶');
+}
+
+function updateProgress(taskId, audioId, aud) {
+  const sb = document.getElementById(`sb-${taskId}-${audioId}`);
+  const at = document.getElementById(`at-${taskId}-${audioId}`);
+  if (!sb || !at || !aud.duration) return;
+  const pct = (aud.currentTime / aud.duration) * 100;
+  sb.value = pct;
+  sb.style.background = `linear-gradient(to right, var(--accent) ${pct}%, var(--border) ${pct}%)`;
+  at.textContent = fmt(aud.currentTime);
+}
+
+function seekAudio(taskId, audioId, val) {
+  const aud = document.getElementById(`aud-${taskId}-${audioId}`);
+  if (aud && aud.duration) {
+    aud.currentTime = (val / 100) * aud.duration;
+    updateProgress(taskId, audioId, aud);
+  }
+}
+
+function fmt(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function setDate() {
+  const d = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('date-line').textContent = d.toLocaleDateString('en-IN', opts);
+}
+
+document.getElementById('task-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTask();
+});
+
+document.getElementById('task-list').addEventListener('keydown', e => {
+  if (!editingId) return;
+  if (e.key === 'Enter') saveEdit(editingId);
+  if (e.key === 'Escape') cancelEdit();
+});
+
+setDate();
+setFilter('all');
+render();
+</script>
+</body>
+</html>
